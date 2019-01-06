@@ -10,8 +10,8 @@ import (
 )
 
 type StateInfo struct {
-	LastQuery   time.Time  `json:"lastQuery"`
-	LastRandVal float32    `json:"lastRandVal"`
+	LastQuery   time.Time `json:"lastQuery"`
+	LastRandVal float32   `json:"lastRandVal"`
 }
 
 var infoFileName = "info.json"
@@ -34,7 +34,7 @@ func LoadInfo(stateInfoFileName string) (StateInfo, error) {
 		defer newFile.Close()
 
 		// create random initial number with 15 <= number <= 85
-		info.LastRandVal = rand.Float32() * 70 + 15
+		info.LastRandVal = rand.Float32()*70 + 15
 	} else {
 		// read from existing file
 		jsonParser := json.NewDecoder(infoFile)
@@ -44,11 +44,11 @@ func LoadInfo(stateInfoFileName string) (StateInfo, error) {
 	return info, nil
 }
 
-func WriteInfo(info StateInfo, stateInfoFileName string) (error) {
+func WriteInfo(info StateInfo, stateInfoFileName string) error {
 	var err error = nil
 	var infoFile *os.File
 
-	infoFile, err = os.OpenFile(stateInfoFileName, os.O_RDWR, syscall.FILE_MAP_WRITE )
+	infoFile, err = os.OpenFile(stateInfoFileName, os.O_RDWR, syscall.FILE_MAP_WRITE)
 	defer infoFile.Close()
 	if err != nil {
 		return err
@@ -60,7 +60,7 @@ func WriteInfo(info StateInfo, stateInfoFileName string) (error) {
 	return err
 }
 
-func main(){
+func main() {
 	// seed in order to get "actual random" numbers
 	rand.Seed(time.Now().UnixNano())
 
@@ -86,6 +86,14 @@ func main(){
 		info.LastRandVal -= randOffset
 	}
 
+	// BOUNDARIES! (randomly chosen)
+	if info.LastRandVal < -10 {
+		info.LastRandVal = -10
+	}
+	if info.LastRandVal > 120 {
+		info.LastRandVal = 120
+	}
+
 	// WRITE
 	err = WriteInfo(info, infoFileName)
 	if err != nil {
@@ -96,4 +104,3 @@ func main(){
 	// PRINT
 	fmt.Printf("temp=%.1f'C\n", info.LastRandVal)
 }
-
